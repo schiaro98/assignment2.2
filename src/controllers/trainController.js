@@ -1,5 +1,5 @@
 function getIndex(req, res){
-    res.send('Hello, world')
+    res.sendFile(__dirname + '/index.html')
 }
 
 function getTrainSolutions(req, res){
