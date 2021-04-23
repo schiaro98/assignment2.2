@@ -1,8 +1,9 @@
 function getIndex(req, res){
-    res.send('Index')
+    res.send('Hello, world')
 }
 
 function getTrainSolutions(req, res){
+    var https = require('https');
     var departure = req.query.departure
     var arrival = req.query.arrival
     var date = req.query.date
@@ -31,7 +32,12 @@ function getTrainSolutions(req, res){
     res.send(departure + " " + arrival + " " + date + " " + time)//Per il momento
 }
 
+function getPostError(req, res){
+    res.send('Post not available')
+}
+
 module.exports = {
     getIndex,
-    getTrainSolutions
+    getTrainSolutions,
+    getPostError
 }
