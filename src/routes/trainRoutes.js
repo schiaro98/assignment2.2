@@ -1,8 +1,10 @@
 module.exports = function (app){
     const trainController = require('../controllers/trainController')
-    const realTimeInfo = require('../controllers/realTimeInfoController')
+    const realTimeInfoController = require('../controllers/realTimeInfoController')
+    const stationInfoController = require('../controllers/stationInfoController')
 
     app.route('/').get(trainController.getIndex) //.post(trainController.getPostError)
-    app.route('/realtimeinfo').get(realTimeInfo.getRealTimeInfo)
+    app.route('/realtimeInfo').get(realTimeInfoController.getRealTimeInfo)
     app.route('/solutions').get(trainController.getTrainSolutions)
+    app.route('/stationInfo').get(stationInfoController.getStationInfo)
 }

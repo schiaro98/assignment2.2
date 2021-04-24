@@ -13,10 +13,10 @@ function getRealTimeInfo(req, res){
             let stopStations = [];
             response.data.fermate.forEach(f => stopStations.push(f.stazione))
             solToDisplay.push({
-                lastRelevation:response.data.oraUltimoRilevamento,
-                lastStation:response.data.stazioneUltimoRilevamento,
-                departure:response.data.origine,
-                arrival:response.data.destinazione,
+                lastRelevation: response.data.oraUltimoRilevamento,
+                lastStation: response.data.stazioneUltimoRilevamento,
+                departure: response.data.origine,
+                arrival: response.data.destinazione,
                 departureTime: response.data.orarioPartenzaZero,
                 arrivalTime: response.data.orarioArrivoZero,
                 trainNumber: response.data.compNumeroTreno,
