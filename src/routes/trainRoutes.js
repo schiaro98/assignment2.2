@@ -3,6 +3,6 @@ module.exports = function (app){
     const realTimeInfo = require('../controllers/realTimeInfoController')
 
     app.route('/').get(trainController.getIndex) //.post(trainController.getPostError)
+    app.route('/realtimeinfo').get(realTimeInfo.getRealTimeInfo)
     app.route('/solutions').get(trainController.getTrainSolutions)
-    app.route('/form')//.get(trainController.getTrainSolutions).post(trainController.getPostError)
 }
