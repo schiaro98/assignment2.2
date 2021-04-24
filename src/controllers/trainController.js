@@ -4,7 +4,6 @@ function getIndex(req, res){
 
 function getTrainSolutions(req, res){
     const axios = require('axios').default;
-
     function getAxiosSolutions(){
         return axios.get("https://www.lefrecce.it/msite/api/solutions",{
             params:{
@@ -22,7 +21,6 @@ function getTrainSolutions(req, res){
         }).then(response=>{
             let solToDisplay = [];
             response.data.forEach(element => {
-                console.log(element);
                 solToDisplay.push({
                     idsolution: element.idsolution,
                     departuretime: element.departuretime,
@@ -36,19 +34,13 @@ function getTrainSolutions(req, res){
                 console.log(error);
             })
     }
-
     getAxiosSolutions()
-        .then( (data)=>{
+        .then((data)=>{
             res.json(data)
         })
 }
 
-function getPostError(req, res){
-    res.send('Post not available')
-}
-
 module.exports = {
     getIndex,
-    getTrainSolutions,
-    getPostError
+    getTrainSolutions
 }
