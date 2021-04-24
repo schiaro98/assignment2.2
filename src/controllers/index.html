@@ -5,19 +5,60 @@
     <title>Ricerca treno</title>
 </head>
 <body>
-<form action="/form" method="get" id="formSubmit">
-    <label for="departure">Stazione partenza:</label><br>
-    <input type="text" id="departure" name="departure" value=""><br>
-    <label for="arrival">Stazione destinazione:</label><br>
-    <input type="text" id="arrival" name="arrival" value=""><br>
-    <label for="date">Data partenza:</label><br>
-    <input type="date" id="date" name="date" value=""><br>
-    <label for="time">Ora di partenza:</label><br>
-    <input type="text" id="time" name="time" value=""><br>
-    <input type="submit" value="Submit">
-</form>
-<div id="result">
-
+<div id="app" class="container-fluid">
+        <label for="departure">Stazione partenza:</label><br>
+        <input v-model="newRequest.departure" type="text" id="departure" name="departure" value=""><br>
+        <label for="arrival">Stazione destinazione:</label><br>
+        <input v-model="newRequest.arrival" type="text" id="arrival" name="arrival" value=""><br>
+        <label for="date">Data partenza:</label><br>
+        <input v-model="newRequest.date" type="date" id="date" name="date" value=""><br>
+        <label for="time">Ora di partenza:</label><br>
+        <input v-model="newRequest.time" type="time" id="time" name="time" value=""><br>
+        <input  @click.prevent="listSolutions" type="submit" value="Submit">
+        <div v-for="sol in solutions">
+                <hr>
+                <h3>{{sol.trainidentifier}}</h3>
+                <p>Partenza: {{new Date(sol.departuretime).getHours()}}:{{new Date(sol.arrivaltime).getMinutes()}}</p>
+                <p>Arrivo: {{new Date(sol.arrivaltime).getHours()}}:{{new Date(sol.arrivaltime).getMinutes()}} </p>
+                <p>Durata: {{sol.duration}}</p>
+        </div>
 </div>
+
+<script src="https://cdn.jsdelivr.net/npm/vue"></script>
+<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+<script>
+    var app = new Vue({
+        el: "#app",
+        data: function (){
+            return {
+                solutions: [],
+                newRequest:{
+                    departure:"",
+                    arrival:"",
+                    date:"",
+                    time:""
+                }
+            }
+        },
+        methods: {
+            // definire funzione listMovies
+            listSolutions: function(){
+                console.log('pressed')
+                axios.get("http://localhost:3123/solutions",{
+                    params:{
+                        departure: this.newRequest.departure,
+                        arrival: this.newRequest.arrival,
+                        date: this.newRequest.date,
+                        time: this.newRequest.time,
+                    }
+                })
+                    .then( response => {
+                        this.solutions = response.data;
+                        console.log(this.solutions)
+                    })
+            }
+        }
+    })
+</script>
 </body>
 </html>
