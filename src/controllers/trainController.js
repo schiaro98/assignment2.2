@@ -4,6 +4,7 @@ function getIndex(req, res){
 
 function getTrainSolutions(req, res){
     const axios = require('axios').default;
+
     function getAxiosSolutions(){
         return axios.get("https://www.lefrecce.it/msite/api/solutions",{
             params:{
@@ -18,18 +19,27 @@ function getTrainSolutions(req, res){
                 frecce:false,
                 onlyRegional:false
             }
-        }).then(response=>
-         // console.log(response);
-         response.data)
+        }).then(response=>{
+            let solToDisplay = [];
+            response.data.forEach(element => {
+                console.log(element);
+                solToDisplay.push({
+                    idsolution: element.idsolution,
+                    departuretime: element.departuretime,
+                    arrivaltime: element.arrivaltime,
+                    duration:element.duration,
+                    trainidentifier: element.trainlist[0].trainidentifier //potrei iterare tutta la lista ma sembra essercene sempre e solo una
+                })});
+            return solToDisplay;
+            })
             .catch(function (error){
-            console.log(error);
-        })
+                console.log(error);
+            })
     }
 
     getAxiosSolutions()
         .then( (data)=>{
-            console.log(data)
-            res.status(200).send('ok')
+            res.json(data)
         })
 }
 
