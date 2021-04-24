@@ -4,7 +4,17 @@ function getIndex(req, res){
 
 function getTrainSolutions(req, res){
     const axios = require('axios').default;
-    function getAxiosSolutions(){
+
+    function getStationId(){
+        return axios.get("http://www.viaggiatreno.it/viaggiatrenonew/resteasy/viaggiatreno/cercaStazione/"+req.query.departure)
+            .then(response=>{
+                return response.data[0].id;
+        }).catch(function (error){
+                console.log(error);
+            })
+    }
+
+    function getSolutions(){
         return axios.get("https://www.lefrecce.it/msite/api/solutions",{
             params:{
                 origin:req.query.departure,
@@ -34,9 +44,10 @@ function getTrainSolutions(req, res){
                 console.log(error);
             })
     }
-    getAxiosSolutions()
+
+    Promise.all([getStationId(), getSolutions()])
         .then((data)=>{
-            res.json(data)
+            res.json({departureStationId: data[0], solutions: data[1]})
         })
 }
 
