@@ -1,14 +1,14 @@
 function getRealTimeInfo(req, res){
     const axios = require('axios').default;
-    function getAxiosSolutions(){
-        const url = "http://www.viaggiatreno.it/viaggiatrenomobile/resteasy/viaggiatreno/andamentoTreno/"
-        const station = "/" + req.query.stationID
-        const trainNumber = "/" + req.query.trainID
-        const date = "/" + req.query.date
-        const urlComponed = url + station + trainNumber + date
+    const url = "http://www.viaggiatreno.it/viaggiatrenomobile/resteasy/viaggiatreno/andamentoTreno/"
+    const station = "/" + req.query.stationID
+    const trainNumber = "/" + req.query.trainID
+    const date = "/" + req.query.date
 
+    function getRealTimeSolutions(){
+        const urlComponed = url + station + trainNumber + date
         return axios.get(urlComponed).
-        then(response=>{
+        then(response => {
             let solToDisplay = [];
             let stopStations = [];
             response.data.fermate.forEach(f => stopStations.push(f.stazione))
@@ -23,16 +23,13 @@ function getRealTimeInfo(req, res){
                 stops: stopStations
             });
             return solToDisplay;
-        })
-            .catch(function (error){
-                console.log(error);
-            })
-            .catch(function (error){
+
+        }).catch(function (error){
                 console.log(error);
             })
     }
 
-    getAxiosSolutions()
+    getRealTimeSolutions()
         .then( (data)=>{
             res.json(data)
         })
