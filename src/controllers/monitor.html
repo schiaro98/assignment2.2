@@ -6,15 +6,17 @@
 </head>
 <body>
 <div id="monitor-app">
-    <h2>{{trainName}}</h2>
-    <p>partito da: {{departureStationId}} alle:</p>
-    <p>diretto a: {{arrival}}</p>
-    <p>arrivo stimato: {{arrivalTime}}</p>
-    <label for="stations">Lista fermate</label>
-    <ul id="stations">
-        <!--<div v-for="stop in stops"></div>
-        <li v-model="stopName"> {{stopName}}</li>-->
-    </ul>
+    <div v-for="train in solutions">
+        <h2>{{trainName}}</h2>
+        <p>Partito da: {{origin}} alle:</p>
+        <p>Diretto a: {{arrival}}</p>
+        <p>Arrivo stimato: {{arrivalTime}} con un ritardo di: {{ritardo}}</p>
+        <label for="stations">Lista fermate</label>
+        <ul id="stations">
+            <!--<div v-for="stop in stops"></div>
+            <li v-model="stopName"> {{stopName}}</li>-->
+        </ul>
+    </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/vue"></script>
@@ -23,23 +25,19 @@
   var app = new Vue({
     el: "#monitor-app",
     data: function (){
-      return {trainName:"",
-          departureStationId:"ciccia",
+      return {
+          trainName:"",
+          departureStationId:"",
           arrival:"",
           arrivalTime:"",
-        solutions: [],
-        newRequest:{
-          departure:"",
-          arrival:"",
-          date:"",
-          time:""
-        }
+          ritardo: "",
       }
     },
       created() {
-          let uri = window.location.search.substring(1);
-          let params = new URLSearchParams(uri);
-          this.arrival = params.get("arrival");
+          let uri = window.location.search.substring(1)
+          let params = new URLSearchParams(uri)
+          this.origin = params.get("origin")
+          this.trainName = params.get("trainName")
       },
     methods: {
       // definire funzione listMovies
