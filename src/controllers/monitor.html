@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Monitor solution</title>
+</head>
+<body>
+<div id="monitor-app">
+    <h2>{{trainName}}</h2>
+    <p>partito da: {{departureStationId}} alle:</p>
+    <p>diretto a: {{arrival}}</p>
+    <p>arrivo stimato: {{arrivalTime}}</p>
+    <label for="stations">Lista fermate</label>
+    <ul id="stations">
+        <!--<div v-for="stop in stops"></div>
+        <li v-model="stopName"> {{stopName}}</li>-->
+    </ul>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/vue"></script>
+<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+<script>
+  var app = new Vue({
+    el: "#monitor-app",
+    data: function (){
+      return {trainName:"",
+          departureStationId:"ciccia",
+          arrival:"",
+          arrivalTime:"",
+        solutions: [],
+        newRequest:{
+          departure:"",
+          arrival:"",
+          date:"",
+          time:""
+        }
+      }
+    },
+      created() {
+          let uri = window.location.search.substring(1);
+          let params = new URLSearchParams(uri);
+          this.arrival = params.get("arrival");
+      },
+    methods: {
+      // definire funzione listMovies
+      listSolutions: function(){
+        axios.get("http://localhost:3123/solutions",{
+          params:{
+            departure: this.newRequest.departure,
+            arrival: this.newRequest.arrival,
+            date: this.newRequest.date,
+            time: this.newRequest.time,
+          }
+        }).then( response => {
+        })
+      }
+    }
+
+  })
+</script>
+</body>
+</html>

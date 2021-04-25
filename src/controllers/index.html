@@ -17,10 +17,16 @@
         <input  @click.prevent="listSolutions" type="submit" value="Submit">
         <div v-for="sol in solutions">
                 <hr>
-                <h3>{{sol.trainidentifier}}</h3>
-                <p>Partenza: {{new Date(sol.departuretime).getHours()}}:{{new Date(sol.arrivaltime).getMinutes()}}</p>
-                <p>Arrivo: {{new Date(sol.arrivaltime).getHours()}}:{{new Date(sol.arrivaltime).getMinutes()}} </p>
+                <h3 v-if="sol.trainidentifiers.length == 1">{{sol.trainidentifiers[0]}}</h3>
+                <div v-else v-for="train in sol.trainidentifiers">
+                        <h3>{{train}}</h3>
+                </div>
+                <p>Partenza: {{getHour(sol.departuretime)}}:{{getMinutes(sol.departuretime)}}</p>
+                <p>Arrivo: {{getHour(sol.arrivaltime)}}:{{getMinutes(sol.arrivaltime)}} </p>
                 <p>Durata: {{sol.duration}}</p>
+                <form action="/monitor" method="get">
+                        <input type="submit" value="Monitor solution" />
+                </form>
         </div>
 </div>
 
@@ -33,10 +39,10 @@
             return {departureStationId:"",
                 solutions: [],
                 newRequest:{
-                    departure:"",
-                    arrival:"",
+                    departure:"cesena",
+                    arrival:"ancona",
                     date:"",
-                    time:""
+                    time:"18:30"
                 }
             }
         },
@@ -50,14 +56,25 @@
                         date: this.newRequest.date,
                         time: this.newRequest.time,
                     }
-                })
-                    .then( response => {
+                }).then( response => {
                         this.departureStationId = response.data.departureStationId;
                         this.solutions = response.data.solutions;
-                        console.log(this.departureStationId)
-                        console.log(this.solutions)
                     })
-            }
+            },
+                getMinutes:function (time){
+                        let minutes = new Date(time).getMinutes();
+                    if (minutes < 10){
+                            return "0"+minutes;
+                    }
+                    return minutes
+                },
+                getHour:function (time){
+                        let minutes = new Date(time).getHours();
+                        if (minutes < 10){
+                                return "0"+minutes;
+                        }
+                        return minutes
+                }
         }
     })
 </script>

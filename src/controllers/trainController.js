@@ -2,6 +2,10 @@ function getIndex(req, res){
     res.sendFile(__dirname + '/index.html')
 }
 
+function getMonitor(req, res){
+    res.sendFile(__dirname + '/monitor.html')
+}
+
 function getTrainSolutions(req, res){
     const axios = require('axios').default;
 
@@ -31,12 +35,16 @@ function getTrainSolutions(req, res){
         }).then(response=>{
             let solToDisplay = [];
             response.data.forEach(element => {
+                let trains = [];
+                element.trainlist.forEach(train =>{
+                    trains.push(train.trainidentifier)
+                })
                 solToDisplay.push({
                     idsolution: element.idsolution,
                     departuretime: element.departuretime,
                     arrivaltime: element.arrivaltime,
                     duration:element.duration,
-                    trainidentifier: element.trainlist[0].trainidentifier //potrei iterare tutta la lista ma sembra essercene sempre e solo una
+                    trainidentifiers: trains
                 })});
             return solToDisplay;
             })
@@ -53,5 +61,6 @@ function getTrainSolutions(req, res){
 
 module.exports = {
     getIndex,
-    getTrainSolutions
+    getTrainSolutions,
+    getMonitor
 }
