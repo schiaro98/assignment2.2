@@ -26,7 +26,6 @@
                 <p>Durata: {{sol.duration}}</p>
 
                 <input @click="monitoring" type="submit" value="Monitor solution" />
-                <p> Ultima stazione: {{lastStationName}}</p>
                 <div v-for="s in stops">
                         <p> Fermata: {{s.Name}} </p>
                         <p> Partenza prevista: {{getHour(s.stopDeparture)}}:{{getMinutes(s.stopDeparture)}}</p>
@@ -53,7 +52,7 @@
                                         date:"",
                                         time:"18:30"
                                 },
-                                lastStationName: "a",
+                                lastStationName: "",
                                 stops: []
                         }
                 },
@@ -69,25 +68,26 @@
                                 }).then( response => {
                                         this.departureStationId = response.data.departureStationId;
                                         this.solutions = response.data.solutions;
+                                        console.log(this.solutions)
+                                        this.solutions.forEach(sol => this.monitoring(sol))
                                 })
                         },
-                        monitoring: function(){
-                                /*let trainDepartureStation = []
-                                trainIdentifiers.forEach( trainCode =>
-                                        axios.get("http://www.viaggiatreno.it/viaggiatrenomobile//resteasy/viaggiatreno/cercaNumeroTreno/" + trainCode.split(" ").pop())
-                                                .then(response => {
-                                                        trainDepartureStation.push(response.descLocOrig)
-                                                }))*/
-                                axios.get("http://localhost:3123/realtimeInfo",{
-                                        params:{
-                                                stationID: this.departureStationId, //Recuperabile con: http://www.viaggiatreno.it/viaggiatrenomobile//resteasy/viaggiatreno/cercaNumeroTreno/3931
-                                                trainID: 9325,
-                                                date: 1619362743716,
+                        monitoring: async function(solution){
+                                for (const trainId of solution.trainidentifiers) {
+                                        const trainOnlyCode = trainId.split(" ").pop();
+                                        if(trainOnlyCode != null){
+                                                axios.get("http://localhost:3123/realtimeInfo",{
+                                                        params:{
+                                                                stationID: await this.getDepartureStation(trainOnlyCode),
+                                                                trainID: trainOnlyCode,
+                                                                date: new Date(),
+                                                        }
+                                                }).then( response => {
+                                                        this.lastStationName = response.data.lastStation;
+                                                        this.stops = response.data.stops
+                                                })
                                         }
-                                }).then( response => {
-                                        this.lastStationName = response.data.lastStation;
-                                        this.stops = response.data.stops
-                                })
+                                }
                         },
                         getMinutes:function (time){
                                 let minutes = new Date(time).getMinutes();
@@ -102,6 +102,12 @@
                                         return "0"+minutes;
                                 }
                                 return minutes
+                        },
+                        getDepartureStation: async function (train) {
+                                /*TODO: far fare questa cosa al server e non al client :(*/
+                                const url = "http://www.viaggiatreno.it/viaggiatrenomobile/resteasy/viaggiatreno/cercaNumeroTreno/" + train.split(" ").pop()
+                                let response = await axios.get(url);
+                                return response.data.descLocOrig;
                         }
                 }
         })

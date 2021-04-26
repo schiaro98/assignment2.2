@@ -7,10 +7,11 @@ function getRealTimeInfo(req, res){
         const trainNumber = "/" + req.query.trainID
         const date = "/" + req.query.date
         const urlComponed = url + station + trainNumber + date
-
+        if(station === "/" || trainNumber === "/" || date === "/"){
+            return null
+        }
         return axios.get(urlComponed).
         then(response=>{
-            let solToDisplay = [];
             let stopStations = [];
             response.data.fermate.forEach(f => stopStations.push({
                 "Name" : f.stazione,
