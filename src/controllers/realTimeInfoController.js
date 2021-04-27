@@ -43,6 +43,33 @@ function getRealTimeInfo(req, res){
         })
 }
 
+function getTrainDepartureStation(req, res){
+    const axios = require('axios').default;
+
+    function getStationCode(){
+        const url = "http://www.viaggiatreno.it/viaggiatrenomobile/resteasy/viaggiatreno/cercaNumeroTreno/"
+        const trainID = "/" + req.query.trainID
+        const urlComponed = url + trainID
+        if(trainID === "/" ){
+            return null
+        }
+        return axios.get(urlComponed).
+        then(response=>{
+            return {
+                stationId : response.data.codLocOrig
+            }
+        }).catch(function (error){
+            console.log(error);
+        })
+    }
+
+    getStationCode()
+        .then( (data)=>{
+            res.json(data)
+        })
+}
+
 module.exports = {
-    getRealTimeInfo
+    getRealTimeInfo,
+    getTrainDepartureStation
 }

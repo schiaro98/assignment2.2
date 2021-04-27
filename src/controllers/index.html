@@ -27,7 +27,6 @@
 
                 <input @click="monitoring(sol.trainidentifiers)" type="submit" value="Monitor solution" />
 
-
         </div>
 
         <div>
@@ -60,9 +59,10 @@
 <script>
         var app = new Vue({
                 el: "#app",
-                data: function (){
+                data:
+                function (){
                         return {
-                                departureStationId:"",
+                                s: "",
                                 solutions: [],
                                 newRequest: {
                                         departure:"cesena",
@@ -71,7 +71,8 @@
                                         time:"18:30"
                                 },
                                 lastStationName: "",
-                                stops: []
+                                stops: [],
+                                trainID: ""
                         }
                 },
                 methods: {
@@ -86,30 +87,23 @@
                                 }).then( response => {
                                         this.departureStationId = response.data.departureStationId;
                                         this.solutions = response.data.solutions;
-                                        //this.solutions.forEach(sol => this.monitoring(sol))
                                 })
                         },
-                        monitoring: async function(trainArray){
-                                console.log(trainArray)
+                        monitoring: function(trainArray){
                                 for (const trainId of trainArray) {
-                                        console.log(trainId)
                                         const trainOnlyCode = trainId.split(" ").pop();
-                                        //departure station è obbligatorio per la situazione dei treni in partenza
-                                        const departureStation = await this.getDepartureStation(trainOnlyCode)
-                                        /*console.log("Getting info for train: " + trainId + " - With code: "
-                                                + trainOnlyCode + " and departure station: " + departureStation)*/
-                                        if(trainOnlyCode != null){
-                                                axios.get("http://localhost:3123/realtimeInfo",{
-                                                        params:{
-                                                                stationID: departureStation,
-                                                                trainID: trainOnlyCode,
-                                                                date:  Date.now(),
-                                                        }
-                                                }).then( response => {
-                                                        this.lastStationName = response.data.lastStation;
-                                                        this.stops = response.data.stops
-                                                })
-                                        }
+                                        this.getDepartureStation(trainOnlyCode).then( res => {
+                                                        axios.get("http://localhost:3123/realtimeInfo",{
+                                                                params:{
+                                                                        stationID: res.station,
+                                                                        trainID: trainOnlyCode,
+                                                                        date:  Date.now(),
+                                                                }
+                                                        }).then( response => {
+                                                                this.lastStationName = response.data.lastStation;
+                                                                this.stops = response.data.stops
+                                                        })
+                                        })
                                 }
                         },
                         getMinutes: function (time){
@@ -130,13 +124,16 @@
                                         return minutes
                                 }
                         },
-                        getDepartureStation: async function (train) {
-                                /*TODO: far fare questa cosa al server e non al client :(
-                                * altrimenti genera errore CORS
-                                * */
-                                const url = "http://www.viaggiatreno.it/viaggiatrenomobile/resteasy/viaggiatreno/cercaNumeroTreno/" + train.split(" ").pop()
-                                let response = await axios.get(url);
-                                return response.data.codLocOrig;
+                        getDepartureStation: function (train) {
+                                return axios.get("http://localhost:3123/trainStation",{
+                                        params:{
+                                                trainID: train
+                                        }
+                                }).then( response => {
+                                        return {
+                                                station : response.data.stationId
+                                        }
+                                })
                         }
                 }
         })

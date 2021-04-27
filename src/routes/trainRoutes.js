@@ -7,5 +7,6 @@ module.exports = function (app){
     app.route('/monitor').get(trainController.getMonitor) //.post(trainController.getPostError)
     app.route('/realtimeInfo').get(realTimeInfoController.getRealTimeInfo)
     app.route('/solutions').get(trainController.getTrainSolutions)
+    app.route('/trainStation').get(realTimeInfoController.getTrainDepartureStation)
     app.route('/stationInfo').get(stationInfoController.getStationInfo)
 }
