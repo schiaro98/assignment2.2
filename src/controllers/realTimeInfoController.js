@@ -32,6 +32,7 @@ function getRealTimeInfo(req, res){
                     departureTime: response.data.orarioPartenzaZero,
                     arrivalTime: response.data.orarioArrivoZero,
                     trainNumber: response.data.compNumeroTreno,
+                    trainDelay: response.data.ritardo,
                     stops: stopStations
                 }
             }).catch(function (error){

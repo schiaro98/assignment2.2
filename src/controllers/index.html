@@ -25,30 +25,33 @@
                 <p>Arrivo: {{getHour(sol.arrivaltime)}}:{{getMinutes(sol.arrivaltime)}} </p>
                 <p>Durata: {{sol.duration}}</p>
 
-                <input @click="monitoring(sol.trainidentifiers)" type="submit" value="Monitor solution" />
+                <input @click="startMonitoring(sol.trainidentifiers)" type="submit" value="Monitor solution" />
 
         </div>
 
         <div>
                 <div v-if="lastStationName !== ''">
                         <p>Ultima stazione rilevata: {{lastStationName}}</p>
+                        <div v-if="trainDelay > 0">
+                                <p> Con un ritardo di: {{s.stopDelay}} minuti</p>
+                        </div>
+                        <div v-else>
+                                <p> Il treno è in orario</p>
+                        </div>
                 </div>
                 <div v-for="s in stops" style="border: 1px solid #000000; background-color: #FFFFFF; width: 500px; -moz-border-radius: 15px; line-height:13px; font-size: 12px; color: #002eba; padding:10px;">
                         <p> Fermata: {{s.Name}} </p>
                         <div v-if="s.stopArrival != null">
-                                <p> Arrivo previsto: {{getHour(s.stopArrival)}}:{{getMinutes(s.stopArrival)}}
+                                Arrivo previsto: {{getHour(s.stopArrival)}}:{{getMinutes(s.stopArrival)}}
                                 <div v-if="s.stopArrivalReal!=null">
                                         reale: {{getHour(s.stopArrivalReal)}}:{{getMinutes(s.stopArrivalReal)}}
                                 </div>
                         </div>
                         <div>
-                                <p> Partenza prevista: {{getHour(s.stopDeparture)}}:{{getMinutes(s.stopDeparture)}}
+                                Partenza prevista: {{getHour(s.stopDeparture)}}:{{getMinutes(s.stopDeparture)}}
                                 <div v-if="s.stopDepartureReal!=null">
                                         reale: {{getHour(s.stopDepartureReal)}}:{{getMinutes(s.stopDepartureReal)}}
                                 </div>
-                        </div>
-                        <div v-if="s.stopDelay > 0">
-                                <p> Con un ritardo di: {{s.stopDelay}} minuti</p>
                         </div>
                 </div>
         </div>
@@ -59,6 +62,7 @@
 <script>
         new Vue({
                 el: "#app",
+
                 data: function (){
                         return {
                                 solutions: [],
@@ -70,9 +74,14 @@
                                 },
                                 lastStationName: "",
                                 stops: [],
-                                trainID: ""
+                                trainID: "",
+                                timer: ""
                         }
                 },
+                /*created(){
+                        this.monitoring(sol.trainidentifiers)
+                        this.timer = setInterval(this.monitoring(), 5000)
+                },*/
                 methods: {
                         listSolutions: function(){
                                 axios.get("http://localhost:3123/solutions",{
@@ -99,7 +108,8 @@
                                                                         date:  Date.now(),
                                                                 }
                                                         }).then( response => {
-                                                                this.lastStationName = response.data.lastStation;
+                                                                this.trainDelay = response.data.trainDelay
+                                                                this.lastStationName = response.data.lastStation
                                                                 this.stops = response.data.stops
                                                         }).catch( err => {
                                                                 console.log(err)
