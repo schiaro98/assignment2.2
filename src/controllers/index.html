@@ -17,7 +17,7 @@
         <input  @click.prevent="listSolutions" type="submit" value="Submit">
         <div v-for="sol in solutions">
                 <hr>
-                <h3 v-if="sol.trainidentifiers.length == 1">{{sol.trainidentifiers[0]}}</h3>
+                <h3 v-if="sol.trainidentifiers.length === 1">{{sol.trainidentifiers[0]}}</h3>
                 <div v-else v-for="train in sol.trainidentifiers">
                         <h3>{{train}}</h3>
                 </div>
@@ -31,27 +31,24 @@
 
         <div>
                 <div v-if="lastStationName !== ''">
-                        <p>Ultimo rilevamento: {{lastStationName}}</p>
+                        <p>Ultima stazione rilevata: {{lastStationName}}</p>
                 </div>
-                <div v-for="s in stops">
+                <div v-for="s in stops" style="border: 1px solid #000000; background-color: #FFFFFF; width: 500px; -moz-border-radius: 15px; line-height:13px; font-size: 12px; color: #002eba; padding:10px;">
                         <p> Fermata: {{s.Name}} </p>
-                        <div>
-                                <p> Partenza prevista: {{getHour(s.stopDeparture)}}:{{getMinutes(s.stopDeparture)}}
-                                <div v-if="s.stopDepartureReal!=null">
-                                        reale: {{getHour(s.stopDepartureReal)}}:{{getMinutes(s.stopDepartureReal)}}
-                                </div>
-                                </p>
-                        </div>
-
                         <div v-if="s.stopArrival != null">
                                 <p> Arrivo previsto: {{getHour(s.stopArrival)}}:{{getMinutes(s.stopArrival)}}
                                 <div v-if="s.stopArrivalReal!=null">
                                         reale: {{getHour(s.stopArrivalReal)}}:{{getMinutes(s.stopArrivalReal)}}
                                 </div>
-                                </p>
+                        </div>
+                        <div>
+                                <p> Partenza prevista: {{getHour(s.stopDeparture)}}:{{getMinutes(s.stopDeparture)}}
+                                <div v-if="s.stopDepartureReal!=null">
+                                        reale: {{getHour(s.stopDepartureReal)}}:{{getMinutes(s.stopDepartureReal)}}
+                                </div>
                         </div>
                         <div v-if="s.stopDelay > 0">
-                                <p> Con un ritardo di: {{s.stopDelay}}</p>
+                                <p> Con un ritardo di: {{s.stopDelay}} minuti</p>
                         </div>
                 </div>
         </div>
@@ -60,10 +57,9 @@
 <script src="https://cdn.jsdelivr.net/npm/vue"></script>
 <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
 <script>
-        var app = new Vue({
+        new Vue({
                 el: "#app",
-                data:
-                function (){
+                data: function (){
                         return {
                                 solutions: [],
                                 newRequest: {
