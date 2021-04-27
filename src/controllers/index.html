@@ -25,15 +25,14 @@
                 <p>Arrivo: {{getHour(sol.arrivaltime)}}:{{getMinutes(sol.arrivaltime)}} </p>
                 <p>Durata: {{sol.duration}}</p>
 
-                <input @click="startMonitoring(sol.trainidentifiers)" type="submit" value="Monitor solution" />
-
+                <input @click="monitoring(sol.trainidentifiers)" type="submit" value="Monitor solution" />
         </div>
 
         <div>
                 <div v-if="lastStationName !== ''">
                         <p>Ultima stazione rilevata: {{lastStationName}}</p>
                         <div v-if="trainDelay > 0">
-                                <p> Con un ritardo di: {{s.stopDelay}} minuti</p>
+                                <p> Con un ritardo di: {{trainDelay}} minuti</p>
                         </div>
                         <div v-else>
                                 <p> Il treno è in orario</p>
@@ -78,10 +77,6 @@
                                 timer: ""
                         }
                 },
-                /*created(){
-                        this.monitoring(sol.trainidentifiers)
-                        this.timer = setInterval(this.monitoring(), 5000)
-                },*/
                 methods: {
                         listSolutions: function(){
                                 axios.get("http://localhost:3123/solutions",{
