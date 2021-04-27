@@ -25,14 +25,32 @@
                 <p>Arrivo: {{getHour(sol.arrivaltime)}}:{{getMinutes(sol.arrivaltime)}} </p>
                 <p>Durata: {{sol.duration}}</p>
 
-                <input @click="monitoring" type="submit" value="Monitor solution" />
+                <input @click="monitoring(sol.trainidentifiers)" type="submit" value="Monitor solution" />
+
+
+        </div>
+
+        <div>
                 <div v-for="s in stops">
                         <p> Fermata: {{s.Name}} </p>
-                        <p> Partenza prevista: {{getHour(s.stopDeparture)}}:{{getMinutes(s.stopDeparture)}}</p>
-                        <p> Partenza reale: {{getHour(s.stopDepartureReal)}}:{{getMinutes(s.stopDepartureReal)}}</p>
-                        <p> Arrivo previsto: {{getHour(s.stopArrival)}}:{{getMinutes(s.stopArrival)}}</p>
-                        <p> Arrivo reale: {{getHour(s.stopArrivalReal)}}:{{getMinutes(s.stopArrivalReal)}}</p>
-                        <p> Con un ritardo di: {{s.stopDelay}}</p>
+                        <div>
+                                <p> Partenza prevista: {{getHour(s.stopDeparture)}}:{{getMinutes(s.stopDeparture)}}
+                                <div v-if="s.stopDepartureReal!=null">
+                                        reale: {{getHour(s.stopDepartureReal)}}:{{getMinutes(s.stopDepartureReal)}}
+                                </div>
+                                </p>
+                        </div>
+
+                        <div v-if="s.stopArrival != null">
+                                <p> Arrivo previsto: {{getHour(s.stopArrival)}}:{{getMinutes(s.stopArrival)}}
+                                <div v-if="s.stopArrivalReal!=null">
+                                        reale: {{getHour(s.stopArrivalReal)}}:{{getMinutes(s.stopArrivalReal)}}
+                                </div>
+                                </p>
+                        </div>
+                        <div v-if="s.stopDelay > 0">
+                                <p> Con un ritardo di: {{s.stopDelay}}</p>
+                        </div>
                 </div>
         </div>
 </div>
@@ -68,19 +86,24 @@
                                 }).then( response => {
                                         this.departureStationId = response.data.departureStationId;
                                         this.solutions = response.data.solutions;
-                                        console.log(this.solutions)
-                                        this.solutions.forEach(sol => this.monitoring(sol))
+                                        //this.solutions.forEach(sol => this.monitoring(sol))
                                 })
                         },
-                        monitoring: async function(solution){
-                                for (const trainId of solution.trainidentifiers) {
+                        monitoring: async function(trainArray){
+                                console.log(trainArray)
+                                for (const trainId of trainArray) {
+                                        console.log(trainId)
                                         const trainOnlyCode = trainId.split(" ").pop();
+                                        //departure station è obbligatorio per la situazione dei treni in partenza
+                                        const departureStation = await this.getDepartureStation(trainOnlyCode)
+                                        /*console.log("Getting info for train: " + trainId + " - With code: "
+                                                + trainOnlyCode + " and departure station: " + departureStation)*/
                                         if(trainOnlyCode != null){
                                                 axios.get("http://localhost:3123/realtimeInfo",{
                                                         params:{
-                                                                stationID: await this.getDepartureStation(trainOnlyCode),
+                                                                stationID: departureStation,
                                                                 trainID: trainOnlyCode,
-                                                                date: new Date(),
+                                                                date:  Date.now(),
                                                         }
                                                 }).then( response => {
                                                         this.lastStationName = response.data.lastStation;
@@ -89,25 +112,31 @@
                                         }
                                 }
                         },
-                        getMinutes:function (time){
-                                let minutes = new Date(time).getMinutes();
-                                if (minutes < 10){
-                                        return "0"+minutes;
+                        getMinutes: function (time){
+                                if(time!=null){
+                                        let minutes = new Date(time).getMinutes();
+                                        if (minutes < 10){
+                                                return "0"+minutes;
+                                        }
+                                        return minutes
                                 }
-                                return minutes
                         },
-                        getHour:function (time){
-                                let minutes = new Date(time).getHours();
-                                if (minutes < 10){
-                                        return "0"+minutes;
+                        getHour: function (time){
+                                if(time!=null) {
+                                        let minutes = new Date(time).getHours();
+                                        if (minutes < 10) {
+                                                return "0" + minutes;
+                                        }
+                                        return minutes
                                 }
-                                return minutes
                         },
                         getDepartureStation: async function (train) {
-                                /*TODO: far fare questa cosa al server e non al client :(*/
+                                /*TODO: far fare questa cosa al server e non al client :(
+                                * altrimenti genera errore CORS
+                                * */
                                 const url = "http://www.viaggiatreno.it/viaggiatrenomobile/resteasy/viaggiatreno/cercaNumeroTreno/" + train.split(" ").pop()
                                 let response = await axios.get(url);
-                                return response.data.descLocOrig;
+                                return response.data.codLocOrig;
                         }
                 }
         })
