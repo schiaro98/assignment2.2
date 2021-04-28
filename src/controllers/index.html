@@ -37,33 +37,33 @@
         </div>
 
         <div>
-                <div v-if="lastStationName !== ''">
+                <div v-if="trains.length > 1">
                         <h2>Monitaggio treni:</h2>
-                        <h3 v-for="train in trainIdentifiers">
-                                {{train}}
-                        </h3>
-                        <p>Ultima stazione rilevata: {{lastStationName}}</p>
-                        <div v-if="trainDelay > 0">
-                                <p> Con un ritardo di: {{trainDelay}} minuti</p>
+                        <div v-for="train in trains">
+                                <h3>{{train.trainIdentifier}}</h3>
+                                <p>Ultima stazione rilevata: {{train.lastStationName}}</p>
+                                <p v-if="train.delay > 0">Con un ritardo di: {{train.delay}} minuti</p>
+                                <p v-else>Il treno è in orario </p>
                         </div>
-                        <div v-else>
-                                <p> Il treno è in orario</p>
-                        </div>
-                </div>
-                <div v-for="s in stops" style="border: 1px solid #000000; background-color: #FFFFFF; width: 500px; -moz-border-radius: 15px; line-height:13px; font-size: 18px; color: #002eba; padding:10px;">
-                        <p> FERMATA: {{s.Name}} </p>
-                        <div v-if="s.stopArrival != null">
-                                <p>Arrivo previsto: {{getTimeFromMillis(s.stopArrival)}}</p>
-                                <div v-if="s.stopArrivalReal!=null">
-                                        <p>Arrivo reale: {{getTimeFromMillis(s.stopArrivalReal)}}</p>
+
+                        <div v-for="train in trains">
+                                <div v-for="s in train.stops" style="border: 1px solid #000000; background-color: #FFFFFF; width: 500px; -moz-border-radius: 15px; line-height:13px; font-size: 15px; color: #002eba; padding:10px;">
+                                        <p> FERMATA: {{s.Name}} </p>
+                                        <div v-if="s.stopArrival != null">
+                                                <p>Arrivo previsto: {{getTimeFromMillis(s.stopArrival)}}</p>
+                                                <div v-if="s.stopArrivalReal!=null">
+                                                        <p>Arrivo reale: {{getTimeFromMillis(s.stopArrivalReal)}}</p>
+                                                </div>
+                                        </div>
+                                        <div>
+                                                <p>Partenza prevista: {{getTimeFromMillis(s.stopDeparture)}}</p>
+                                                <div v-if="s.stopDepartureReal!=null">
+                                                        <p>Partenza reale: {{getTimeFromMillis(s.stopDepartureReal)}}</p>
+                                                </div>
+                                        </div>
                                 </div>
                         </div>
-                        <div>
-                                <p>Partenza prevista: {{getTimeFromMillis(s.stopDeparture)}}</p>
-                                <div v-if="s.stopDepartureReal!=null">
-                                        <p>Partenza reale: {{getTimeFromMillis(s.stopDepartureReal)}}</p>
-                                </div>
-                        </div>
+
                 </div>
         </div>
 </div>
@@ -86,28 +86,19 @@
                                         date:"",
                                         time:"15:30"
                                 },
-                                lastStationName: "",
-                                stops: [],
-                                trainIdentifiers: []
+                                trains: [{
+                                        trainIdentifier : "",
+                                        lastStationName: "",
+                                        delay: "",
+                                        stops: []
+                                }]
                         }
                 },
                 methods: {
-                        startMonitoring: function(trainArray){
-                                this.trainIdentifiers = trainArray;
-                                this.solutions = []
-                                this.loadingMonitor = true;
-                                clearInterval(refreshIntervalId)
-                                refreshIntervalId = setInterval(function(){
-                                        this.monitoring(trainArray)
-                                }.bind(this), 3000);
-
-                        },
                         listSolutions: function(){
                                 this.stops = []
-                                this.lastStationName = "";
                                 clearInterval(refreshIntervalId)
                                 this.loading = true
-                                this.departureStationId = "";
                                 this.solutions = [];
                                 axios.get("http://localhost:3123/solutions",{
                                         params:{
@@ -117,10 +108,19 @@
                                                 time: this.newRequest.time,
                                         }
                                 }).then( response => {
-                                        this.departureStationId = response.data.departureStationId;
                                         this.solutions = response.data.solutions;
                                         this.loading = false;
                                 })
+                        },
+                        startMonitoring: function(trainArray){
+                                this.solutions = []
+                                this.loadingMonitor = true;
+
+                                clearInterval(refreshIntervalId)
+                                refreshIntervalId = setInterval(function(){
+                                        this.monitoring(trainArray)
+                                }.bind(this), 3000);
+
                         },
                         monitoring: function(trainArray){
                                 trainArray
@@ -134,18 +134,31 @@
                                                                         date:  Date.now(),
                                                                 }
                                                         }).then( response => {
-                                                                this.trainDelay = response.data.trainDelay
-                                                                this.lastStationName = response.data.lastStation
-                                                                this.stops = response.data.stops
+                                                                this.updateTrain(response.data, trainId)
                                                         }).catch( err => {
                                                                 console.log(err)
                                                         })
+                                                })
                                         })
-                                })
                                 this.loadingMonitor = false;
                         },
-                        getTimeFromMillis: function(timeInMillis){
-                                return new Date(timeInMillis).toISOString().slice(11,19)
+                        updateTrain: function (info, trainId){
+                                let foundIndex =  this.trains.findIndex(train => train.trainIdentifier === trainId);
+                                if (foundIndex !== -1){
+                                        //update
+                                        this.trains[foundIndex].trainIdentifier = trainId
+                                        this.trains[foundIndex].stops = info.stops
+                                        this.trains[foundIndex].delay = info.trainDelay
+                                        this.trains[foundIndex].lastStationName = info.lastStation
+                                } else {
+                                        //create
+                                        this.trains.push({
+                                                trainIdentifier : trainId,
+                                                lastStationName: info.lastStation,
+                                                delay: info.trainDelay,
+                                                stops: info.stops
+                                        })
+                                }
                         },
                         getDepartureStation: function (train) {
                                 return axios.get("http://localhost:3123/trainStation",{
@@ -158,6 +171,9 @@
                                                 station : response.data.stationId
                                         }
                                 })
+                        },
+                        getTimeFromMillis: function(timeInMillis){
+                                return new Date(timeInMillis).toISOString().slice(11,16)
                         }
                 }
         })
