@@ -17,9 +17,9 @@ function getRealTimeInfo(req, res){
                 let stopStations = [];
                 response.data.fermate.forEach(f => stopStations.push({
                     "Name" : f.stazione,
-                    "stopDeparture" : f.programmata,
+                    "stopDeparture" : f.partenza_teorica,
                     "stopArrival" : f.arrivo_teorico,
-                    "stopDepartureReal" : f.effettiva,
+                    "stopDepartureReal" : f.partenzaReale,
                     "stopArrivalReal" : f.arrivoReale,
                     "stopDelay": f.ritardo,
                     "stopStationID": f.id

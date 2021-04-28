@@ -15,14 +15,22 @@
         <label for="time">Ora di partenza:</label><br>
         <input v-model="newRequest.time" type="time" id="time" name="time" value=""><br>
         <input  @click.prevent="listSolutions" type="submit" value="Submit">
+
+        <div v-if="loading == true">
+                <p>Caricamento soluzioni ...</p>
+        </div>
+        <div v-if="loadingMonitor == true">
+                <p>Cercando informazioni per monitorare la soluzione ...</p>
+        </div>
+
         <div v-for="sol in solutions">
                 <hr>
                 <h3 v-if="sol.trainidentifiers.length === 1">{{sol.trainidentifiers[0]}}</h3>
                 <div v-else v-for="train in sol.trainidentifiers">
                         <h3>{{train}}</h3>
                 </div>
-                <p>Partenza: {{getHour(sol.departuretime)}}:{{getMinutes(sol.departuretime)}}</p>
-                <p>Arrivo: {{getHour(sol.arrivaltime)}}:{{getMinutes(sol.arrivaltime)}} </p>
+                <p>Partenza: {{getTimeFromMillis(sol.departuretime)}}</p>
+                <p>Arrivo: {{getTimeFromMillis(sol.arrivaltime)}}</p>
                 <p>Durata: {{sol.duration}}</p>
 
                 <input @click="startMonitoring(sol.trainidentifiers)" type="submit" value="Monitor solution" />
@@ -30,6 +38,10 @@
 
         <div>
                 <div v-if="lastStationName !== ''">
+                        <h2>Monitaggio treni:</h2>
+                        <h3 v-for="train in trainIdentifiers">
+                                {{train}}
+                        </h3>
                         <p>Ultima stazione rilevata: {{lastStationName}}</p>
                         <div v-if="trainDelay > 0">
                                 <p> Con un ritardo di: {{trainDelay}} minuti</p>
@@ -38,18 +50,18 @@
                                 <p> Il treno è in orario</p>
                         </div>
                 </div>
-                <div v-for="s in stops" style="border: 1px solid #000000; background-color: #FFFFFF; width: 500px; -moz-border-radius: 15px; line-height:13px; font-size: 12px; color: #002eba; padding:10px;">
-                        <p> Fermata: {{s.Name}} </p>
+                <div v-for="s in stops" style="border: 1px solid #000000; background-color: #FFFFFF; width: 500px; -moz-border-radius: 15px; line-height:13px; font-size: 18px; color: #002eba; padding:10px;">
+                        <p> FERMATA: {{s.Name}} </p>
                         <div v-if="s.stopArrival != null">
-                                Arrivo previsto: {{getHour(s.stopArrival)}}:{{getMinutes(s.stopArrival)}}
+                                <p>Arrivo previsto: {{getTimeFromMillis(s.stopArrival)}}</p>
                                 <div v-if="s.stopArrivalReal!=null">
-                                        reale: {{getHour(s.stopArrivalReal)}}:{{getMinutes(s.stopArrivalReal)}}
+                                        <p>Arrivo reale: {{getTimeFromMillis(s.stopArrivalReal)}}</p>
                                 </div>
                         </div>
                         <div>
-                                Partenza prevista: {{getHour(s.stopDeparture)}}:{{getMinutes(s.stopDeparture)}}
+                                <p>Partenza prevista: {{getTimeFromMillis(s.stopDeparture)}}</p>
                                 <div v-if="s.stopDepartureReal!=null">
-                                        reale: {{getHour(s.stopDepartureReal)}}:{{getMinutes(s.stopDepartureReal)}}
+                                        <p>Partenza reale: {{getTimeFromMillis(s.stopDepartureReal)}}</p>
                                 </div>
                         </div>
                 </div>
@@ -65,30 +77,38 @@
 
                 data: function (){
                         return {
+                                loading: false,
+                                loadingMonitor: false,
                                 solutions: [],
                                 newRequest: {
                                         departure:"cesena",
                                         arrival:"ancona",
                                         date:"",
-                                        time:"18:30"
+                                        time:"15:30"
                                 },
                                 lastStationName: "",
                                 stops: [],
-                                trainID: "",
-                                timer: "",
+                                trainIdentifiers: []
                         }
                 },
                 methods: {
                         startMonitoring: function(trainArray){
-                                /*
-                                TODO: Una volta che setto il timer per un monitor, devo togliere altri monitor!
-                                 */
+                                this.trainIdentifiers = trainArray;
+                                this.solutions = []
+                                this.loadingMonitor = true;
                                 clearInterval(refreshIntervalId)
                                 refreshIntervalId = setInterval(function(){
                                         this.monitoring(trainArray)
                                 }.bind(this), 3000);
+
                         },
                         listSolutions: function(){
+                                this.stops = []
+                                this.lastStationName = "";
+                                clearInterval(refreshIntervalId)
+                                this.loading = true
+                                this.departureStationId = "";
+                                this.solutions = [];
                                 axios.get("http://localhost:3123/solutions",{
                                         params:{
                                                 departure: this.newRequest.departure,
@@ -99,6 +119,7 @@
                                 }).then( response => {
                                         this.departureStationId = response.data.departureStationId;
                                         this.solutions = response.data.solutions;
+                                        this.loading = false;
                                 })
                         },
                         monitoring: function(trainArray){
@@ -121,24 +142,10 @@
                                                         })
                                         })
                                 })
+                                this.loadingMonitor = false;
                         },
-                        getMinutes: function (time){
-                                if(time!=null){
-                                        let minutes = new Date(time).getMinutes();
-                                        if (minutes < 10){
-                                                return "0"+minutes;
-                                        }
-                                        return minutes
-                                }
-                        },
-                        getHour: function (time){
-                                if(time!=null) {
-                                        let minutes = new Date(time).getHours();
-                                        if (minutes < 10) {
-                                                return "0" + minutes;
-                                        }
-                                        return minutes
-                                }
+                        getTimeFromMillis: function(timeInMillis){
+                                return new Date(timeInMillis).toISOString().slice(11,19)
                         },
                         getDepartureStation: function (train) {
                                 return axios.get("http://localhost:3123/trainStation",{
