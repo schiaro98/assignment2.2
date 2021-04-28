@@ -16,10 +16,10 @@
         <input v-model="newRequest.time" type="time" id="time" name="time" value=""><br>
         <input  @click.prevent="listSolutions" type="submit" value="Submit">
 
-        <div v-if="loading == true">
+        <div v-if="loading === true">
                 <p>Caricamento soluzioni ...</p>
         </div>
-        <div v-if="loadingMonitor == true">
+        <div v-if="loadingMonitor === true">
                 <p>Cercando informazioni per monitorare la soluzione ...</p>
         </div>
 
@@ -47,7 +47,7 @@
                         </div>
 
                         <div v-for="train in trains">
-                                <h3>Fermate per il treno {{train.trainIdentifier}}</h3>
+                                <h3>Fermate per il treno {{train.trainName}}</h3>
                                 <div v-for="s in train.stops" style="border: 1px solid #000000; background-color: #FFFFFF; width: 500px; -moz-border-radius: 15px; line-height:13px; font-size: 15px; color: #002eba; padding:10px;">
                                         <p> FERMATA: {{s.Name}} </p>
                                         <div v-if="s.stopArrival != null">
@@ -72,7 +72,7 @@
 <script src="https://cdn.jsdelivr.net/npm/vue"></script>
 <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
 <script>
-        var refreshIntervalId
+        let refreshIntervalId
         new Vue({
                 el: "#app",
 
