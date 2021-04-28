@@ -37,16 +37,17 @@
         </div>
 
         <div>
-                <div v-if="trains.length > 1">
+                <div v-if="trains.length > 0">
                         <h2>Monitaggio treni:</h2>
                         <div v-for="train in trains">
-                                <h3>{{train.trainIdentifier}}</h3>
+                                <h3>{{train.trainName}}</h3>
                                 <p>Ultima stazione rilevata: {{train.lastStationName}}</p>
                                 <p v-if="train.delay > 0">Con un ritardo di: {{train.delay}} minuti</p>
                                 <p v-else>Il treno è in orario </p>
                         </div>
 
                         <div v-for="train in trains">
+                                <h3>Fermate per il treno {{train.trainIdentifier}}</h3>
                                 <div v-for="s in train.stops" style="border: 1px solid #000000; background-color: #FFFFFF; width: 500px; -moz-border-radius: 15px; line-height:13px; font-size: 15px; color: #002eba; padding:10px;">
                                         <p> FERMATA: {{s.Name}} </p>
                                         <div v-if="s.stopArrival != null">
@@ -86,16 +87,19 @@
                                         date:"",
                                         time:"15:30"
                                 },
-                                trains: [{
-                                        trainIdentifier : "",
-                                        lastStationName: "",
-                                        delay: "",
-                                        stops: []
-                                }]
+                                trainNames: [],
+                                trains: []
+                        // {
+                        //         trainIdentifier : "",
+                        //         lastStationName: "",
+                        //         delay: "",
+                        //         stops: []
+                        // }
                         }
                 },
                 methods: {
                         listSolutions: function(){
+                                this.trains = []
                                 this.stops = []
                                 clearInterval(refreshIntervalId)
                                 this.loading = true
@@ -113,13 +117,13 @@
                                 })
                         },
                         startMonitoring: function(trainArray){
+                                this.trainNames = trainArray;
                                 this.solutions = []
                                 this.loadingMonitor = true;
-
                                 clearInterval(refreshIntervalId)
                                 refreshIntervalId = setInterval(function(){
                                         this.monitoring(trainArray)
-                                }.bind(this), 3000);
+                                }.bind(this), 5000);
 
                         },
                         monitoring: function(trainArray){
@@ -146,13 +150,14 @@
                                 let foundIndex =  this.trains.findIndex(train => train.trainIdentifier === trainId);
                                 if (foundIndex !== -1){
                                         //update
-                                        this.trains[foundIndex].trainIdentifier = trainId
                                         this.trains[foundIndex].stops = info.stops
                                         this.trains[foundIndex].delay = info.trainDelay
                                         this.trains[foundIndex].lastStationName = info.lastStation
                                 } else {
                                         //create
+                                        const indexOfTrainName = this.trainNames.findIndex(name => name.includes(trainId))
                                         this.trains.push({
+                                                trainName: this.trainNames[indexOfTrainName],
                                                 trainIdentifier : trainId,
                                                 lastStationName: info.lastStation,
                                                 delay: info.trainDelay,
