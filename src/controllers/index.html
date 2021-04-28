@@ -75,7 +75,7 @@
                                 lastStationName: "",
                                 stops: [],
                                 trainID: "",
-                                timer: ""
+                                timer: "",
                         }
                 },
                 methods: {
@@ -102,14 +102,14 @@
                                 })
                         },
                         monitoring: function(trainArray){
-                                for (const trainId of trainArray) {
-                                        const trainOnlyCode = trainId.split(" ").pop();
-                                        this.getDepartureStation(trainOnlyCode)
-                                                .then( res => {
+                                trainArray
+                                        .map(trainName => trainName.split(" ").pop())
+                                        .forEach(trainId => {
+                                        this.getDepartureStation(trainId).then( res => {
                                                         axios.get("http://localhost:3123/realtimeInfo",{
                                                                 params:{
                                                                         stationID: res.station,
-                                                                        trainID: trainOnlyCode,
+                                                                        trainID: trainId,
                                                                         date:  Date.now(),
                                                                 }
                                                         }).then( response => {
@@ -120,7 +120,7 @@
                                                                 console.log(err)
                                                         })
                                         })
-                                }
+                                })
                         },
                         getMinutes: function (time){
                                 if(time!=null){
